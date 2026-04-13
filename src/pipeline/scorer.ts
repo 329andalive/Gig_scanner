@@ -79,10 +79,14 @@ export async function scoreListing(
       outputTokens,
     };
   } catch (err) {
-    console.error(`    Scoring failed for "${listing.title}":`, err instanceof Error ? err.message : err);
+    const errMsg = err instanceof Error ? err.message : String(err);
+    console.error(`    Scoring failed for "${listing.title}": ${errMsg}`);
+    if (err instanceof Error && err.stack) {
+      console.error(`    Stack: ${err.stack.split('\n').slice(0, 3).join(' | ')}`);
+    }
     return {
       score: 0,
-      reasoning: 'Scoring failed — could not parse AI response',
+      reasoning: `Scoring failed: ${errMsg.slice(0, 100)}`,
       matchedKeywords: [],
       inputTokens: 0,
       outputTokens: 0,

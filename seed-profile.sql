@@ -29,16 +29,19 @@ INSERT INTO public.skill_profiles (
   '00000000-0000-0000-0000-000000000000',  -- ← Replace with your auth.users UUID
   'Vibe Coder — AI Apps for Trades & Contractors',
   ARRAY[
-    'AI', 'artificial intelligence', 'chatbot', 'AI chatbot',
-    'MVP', 'minimum viable product', 'prototype',
-    'landing page', 'web app', 'mobile app',
+    'AI', 'artificial intelligence', 'chatbot', 'AI chatbot', 'AI app',
+    'MVP', 'minimum viable product', 'prototype', 'MVP build',
+    'landing page', 'web app', 'mobile app', 'build me an app',
+    'no-code', 'no code', 'low-code', 'Bolt.new', 'Lovable', 'v0',
+    'internal tool', 'dashboard', 'admin panel',
     'trades', 'contractor', 'plumbing', 'HVAC', 'electrical',
     'construction', 'roofing', 'landscaping', 'home services',
-    'small business', 'local business',
-    'automation', 'workflow', 'scheduling',
+    'small business', 'local business', 'startup',
+    'automation', 'workflow', 'scheduling', 'CRM',
+    'SaaS', 'saas', 'software as a service',
     'Claude', 'GPT', 'LLM', 'Anthropic', 'OpenAI',
     'Next.js', 'React', 'Node.js', 'Supabase', 'TypeScript',
-    'vibe coding', 'vibe coder', 'bolt', 'cursor', 'v0'
+    'vibe coding', 'vibe coder', 'cursor', 'AI-assisted'
   ],
   ARRAY[
     'blockchain', 'crypto', 'NFT', 'Web3', 'Solidity',
@@ -50,7 +53,7 @@ INSERT INTO public.skill_profiles (
     'data entry', 'virtual assistant',
     'game development', 'Unity', 'Unreal Engine'
   ],
-  500,     -- min_budget: $500
+  100,     -- min_budget: $100 (cast wider net)
   25000,   -- max_budget: $25,000
   'I am a vibe coder specializing in AI-powered apps for trades and contractors. '
   'I build MVPs, landing pages, chatbots, and workflow automation tools for '
