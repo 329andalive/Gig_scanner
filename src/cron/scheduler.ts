@@ -7,6 +7,10 @@ import { scrapeUpwork } from '../scrapers/upwork.js';
 import { scrapeFiverr } from '../scrapers/fiverr.js';
 import { scrapeVibeTalent } from '../scrapers/vibetalent.js';
 import type { Platform, RawListing } from '../types/index.js';
+import homeRoutes from '../dashboard/home.js';
+import listingsRoutes from '../dashboard/listings.js';
+import detailRoutes from '../dashboard/detail.js';
+import logsRoutes from '../dashboard/logs.js';
 
 // ── State ───────────────────────────────────────────────────
 let lastScanAt: string | null = null;
@@ -192,6 +196,12 @@ async function runFullScan(): Promise<void> {
 // ── Health check server ─────────────────────────────────────
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// ── Dashboard routes ──────────────────────────────────────────
+app.use(homeRoutes);
+app.use(listingsRoutes);
+app.use(detailRoutes);
+app.use(logsRoutes);
 
 app.get('/health', (_req, res) => {
   res.json({
