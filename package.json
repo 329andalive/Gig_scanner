@@ -1,0 +1,35 @@
+{
+  "name": "gigscanner",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Automated freelance job board scanner with AI scoring",
+  "scripts": {
+    "dev": "tsx src/cron/scheduler.ts",
+    "test:connection": "tsx src/config/test-connection.ts",
+    "test:upwork": "tsx src/scrapers/upwork.ts",
+    "test:fiverr": "tsx src/scrapers/fiverr.ts",
+    "test:vibetalent": "tsx src/scrapers/vibetalent.ts",
+    "build": "tsc",
+    "start": "node dist/cron/scheduler.js"
+  },
+  "keywords": [],
+  "author": "Jeremy Holt",
+  "license": "ISC",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.88.0",
+    "@supabase/supabase-js": "^2.103.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "node-cron": "^4.2.1",
+    "puppeteer": "^24.40.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "resend": "^6.11.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.6.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}
