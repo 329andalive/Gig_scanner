@@ -4,5 +4,5 @@ builder = "dockerfile"
 [deploy]
 startCommand = "npx tsx src/cron/scheduler.ts"
 healthcheckPath = "/health"
-healthcheckTimeout = 30
+healthcheckTimeout = 120
 restartPolicyType = "always"

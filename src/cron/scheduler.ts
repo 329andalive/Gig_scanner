@@ -205,8 +205,8 @@ app.get('/health', (_req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Health check server running on port ${PORT}`);
+app.listen(Number(PORT), '0.0.0.0', () => {
+  console.log(`Health check server running on 0.0.0.0:${PORT}`);
 });
 
 // ── Cron schedule ───────────────────────────────────────────
