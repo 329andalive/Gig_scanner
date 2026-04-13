@@ -1,6 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { env } from '../config/env.js';
-import type { RawListing, SkillProfile, ScoreResult } from '../types/index.js';
+import type { RawListing, SkillProfile, ScoreResult, TokenUsage } from '../types/index.js';
+
+// Claude Haiku pricing (per token)
+const HAIKU_INPUT_PRICE = 0.80 / 1_000_000;   // $0.80 per 1M input tokens
+const HAIKU_OUTPUT_PRICE = 4.00 / 1_000_000;   // $4.00 per 1M output tokens
 
 const SCORING_DELAY_MS = 500;
 
@@ -58,6 +62,8 @@ export async function scoreListing(
     });
 
     const text = response.content[0].type === 'text' ? response.content[0].text : '';
+    const inputTokens = response.usage?.input_tokens ?? 0;
+    const outputTokens = response.usage?.output_tokens ?? 0;
 
     // Parse JSON from response — handle potential wrapping
     const jsonStr = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
@@ -69,6 +75,8 @@ export async function scoreListing(
       matchedKeywords: Array.isArray(result.matched_keywords)
         ? result.matched_keywords.map(String)
         : [],
+      inputTokens,
+      outputTokens,
     };
   } catch (err) {
     console.error(`    Scoring failed for "${listing.title}":`, err instanceof Error ? err.message : err);
@@ -76,25 +84,36 @@ export async function scoreListing(
       score: 0,
       reasoning: 'Scoring failed — could not parse AI response',
       matchedKeywords: [],
+      inputTokens: 0,
+      outputTokens: 0,
     };
   }
+}
+
+export interface ScoringBatchResult {
+  scores: Map<RawListing, ScoreResult>;
+  tokenUsage: TokenUsage;
 }
 
 /** Score a batch of listings sequentially with rate limiting */
 export async function scoreListings(
   listings: RawListing[],
   profile: SkillProfile
-): Promise<Map<RawListing, ScoreResult>> {
-  const results = new Map<RawListing, ScoreResult>();
+): Promise<ScoringBatchResult> {
+  const scores = new Map<RawListing, ScoreResult>();
+  let totalInput = 0;
+  let totalOutput = 0;
 
   for (let i = 0; i < listings.length; i++) {
     const listing = listings[i];
     console.log(`    Scoring ${i + 1}/${listings.length}: ${listing.title.slice(0, 60)}`);
 
     const result = await scoreListing(listing, profile);
-    results.set(listing, result);
+    scores.set(listing, result);
+    totalInput += result.inputTokens;
+    totalOutput += result.outputTokens;
 
-    console.log(`      → ${result.score}/100: ${result.reasoning.slice(0, 80)}`);
+    console.log(`      → ${result.score}/100 (${result.inputTokens}+${result.outputTokens} tokens): ${result.reasoning.slice(0, 80)}`);
 
     // Rate limit between calls
     if (i < listings.length - 1) {
@@ -102,5 +121,12 @@ export async function scoreListings(
     }
   }
 
-  return results;
+  const estimatedCostUsd = (totalInput * HAIKU_INPUT_PRICE) + (totalOutput * HAIKU_OUTPUT_PRICE);
+
+  console.log(`    Tokens: ${totalInput} in + ${totalOutput} out = ~$${estimatedCostUsd.toFixed(4)}`);
+
+  return {
+    scores,
+    tokenUsage: { inputTokens: totalInput, outputTokens: totalOutput, estimatedCostUsd },
+  };
 }

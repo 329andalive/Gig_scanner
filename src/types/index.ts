@@ -92,6 +92,9 @@ export interface ScanLog {
   alerts_sent: number;
   error_message: string | null;
   duration_ms: number | null;
+  input_tokens: number;
+  output_tokens: number;
+  estimated_cost_usd: number;
 }
 
 // ── Scraper module interface ────────────────────────────────
@@ -104,4 +107,12 @@ export interface ScoreResult {
   score: number;
   reasoning: string;
   matchedKeywords: string[];
+  inputTokens: number;
+  outputTokens: number;
+}
+
+export interface TokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+  estimatedCostUsd: number;
 }

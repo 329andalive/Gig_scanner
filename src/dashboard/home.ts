@@ -7,12 +7,13 @@ const router = Router();
 router.get('/', async (_req, res) => {
   try {
     // Fetch stats in parallel
-    const [listingsRes, alertsRes, scansRes, recentRes, scoreDistRes] = await Promise.all([
+    const [listingsRes, alertsRes, scansRes, recentRes, scoreDistRes, tokenRes] = await Promise.all([
       supabase.from('listings').select('id', { count: 'exact', head: true }),
       supabase.from('alert_history').select('id', { count: 'exact', head: true }),
       supabase.from('scan_logs').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
       supabase.from('listings').select('*').order('scraped_at', { ascending: false }).limit(10),
       supabase.from('listings').select('fit_score, status'),
+      supabase.from('scan_logs').select('input_tokens, output_tokens, estimated_cost_usd'),
     ]);
 
     const totalListings = listingsRes.count || 0;
@@ -26,6 +27,13 @@ router.get('/', async (_req, res) => {
     const good = allScores.filter((l) => (l.fit_score ?? 0) >= 70 && (l.fit_score ?? 0) < 90).length;
     const low = allScores.filter((l) => (l.fit_score ?? 0) > 0 && (l.fit_score ?? 0) < 70).length;
     const unscored = allScores.filter((l) => l.fit_score === null).length;
+
+    // Token usage totals
+    const tokenData = tokenRes.data || [];
+    const totalInputTokens = tokenData.reduce((sum, l) => sum + (l.input_tokens || 0), 0);
+    const totalOutputTokens = tokenData.reduce((sum, l) => sum + (l.output_tokens || 0), 0);
+    const totalCost = tokenData.reduce((sum, l) => sum + (parseFloat(l.estimated_cost_usd) || 0), 0);
+    const totalTokens = totalInputTokens + totalOutputTokens;
 
     // Status counts
     const applied = allScores.filter((l) => l.status === 'applied').length;
@@ -68,6 +76,16 @@ router.get('/', async (_req, res) => {
           <div class="label">Scans Completed</div>
           <div class="value">${totalScans}</div>
           <div class="sub">${won} gigs won</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Tokens Used</div>
+          <div class="value">${totalTokens > 1000 ? (totalTokens / 1000).toFixed(1) + 'k' : totalTokens}</div>
+          <div class="sub">${totalInputTokens.toLocaleString()} in / ${totalOutputTokens.toLocaleString()} out</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">API Cost</div>
+          <div class="value">$${totalCost.toFixed(4)}</div>
+          <div class="sub">Claude Haiku</div>
         </div>
       </div>
 

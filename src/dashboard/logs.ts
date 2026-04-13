@@ -36,6 +36,8 @@ router.get('/logs', async (_req, res) => {
           <td>${l.new_listings ?? 0}</td>
           <td>${l.listings_scored ?? 0}</td>
           <td>${l.alerts_sent ?? 0}</td>
+          <td style="white-space:nowrap;">${(Number(l.input_tokens || 0) + Number(l.output_tokens || 0)).toLocaleString()}</td>
+          <td style="white-space:nowrap;">$${(parseFloat(String(l.estimated_cost_usd ?? 0))).toFixed(4)}</td>
           <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#ef4444;">
             ${esc(l.error_message as string | null) || ''}
           </td>
@@ -61,6 +63,16 @@ router.get('/logs', async (_req, res) => {
           <div class="value">${totalFound}</div>
           <div class="sub">${totalNew} new</div>
         </div>
+        <div class="stat-card">
+          <div class="label">Total Tokens</div>
+          <div class="value">${(() => { const t = completed.reduce((s, l) => s + (l.input_tokens || 0) + (l.output_tokens || 0), 0); return t > 1000 ? (t / 1000).toFixed(1) + 'k' : t; })()}</div>
+          <div class="sub">across all scans</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Total API Cost</div>
+          <div class="value">$${completed.reduce((s, l) => s + (parseFloat(l.estimated_cost_usd) || 0), 0).toFixed(4)}</div>
+          <div class="sub">Claude Haiku</div>
+        </div>
       </div>
 
       ${(logs?.length || 0) > 0 ? `
@@ -76,6 +88,8 @@ router.get('/logs', async (_req, res) => {
               <th>New</th>
               <th>Scored</th>
               <th>Alerts</th>
+              <th>Tokens</th>
+              <th>Cost</th>
               <th>Error</th>
             </tr>
           </thead>

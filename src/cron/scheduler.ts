@@ -51,7 +51,7 @@ async function createScanLog(platformId: string): Promise<string | null> {
 
 async function completeScanLog(
   logId: string,
-  stats: { listingsFound: number; newListings: number; listingsScored: number; alertsSent: number },
+  stats: { listingsFound: number; newListings: number; listingsScored: number; alertsSent: number; inputTokens?: number; outputTokens?: number; estimatedCostUsd?: number },
   startTime: number,
   error?: string
 ): Promise<void> {
@@ -64,6 +64,9 @@ async function completeScanLog(
       new_listings: stats.newListings,
       listings_scored: stats.listingsScored,
       alerts_sent: stats.alertsSent,
+      input_tokens: stats.inputTokens || 0,
+      output_tokens: stats.outputTokens || 0,
+      estimated_cost_usd: stats.estimatedCostUsd || 0,
       error_message: error || null,
       duration_ms: Date.now() - startTime,
     })
@@ -79,7 +82,7 @@ async function scanPlatform(platform: Platform): Promise<void> {
   const startTime = Date.now();
   const logId = await createScanLog(platform.id);
 
-  const stats = { listingsFound: 0, newListings: 0, listingsScored: 0, alertsSent: 0 };
+  const stats = { listingsFound: 0, newListings: 0, listingsScored: 0, alertsSent: 0, inputTokens: 0, outputTokens: 0, estimatedCostUsd: 0 };
 
   try {
     // Get skill profile
@@ -106,6 +109,9 @@ async function scanPlatform(platform: Platform): Promise<void> {
     const pipelineResult = await runPipeline(rawListings, profile);
     stats.newListings = pipelineResult.newListings;
     stats.listingsScored = pipelineResult.listingsScored;
+    stats.inputTokens = pipelineResult.tokenUsage.inputTokens;
+    stats.outputTokens = pipelineResult.tokenUsage.outputTokens;
+    stats.estimatedCostUsd = pipelineResult.tokenUsage.estimatedCostUsd;
 
     // Alerts
     if (pipelineResult.alertCandidates.length > 0) {

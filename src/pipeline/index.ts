@@ -2,13 +2,14 @@ import { supabase } from '../config/supabase.js';
 import { deduplicate } from './dedup.js';
 import { scoreListings } from './scorer.js';
 import { writeListings } from './writer.js';
-import type { RawListing, SkillProfile, ScoredListing } from '../types/index.js';
+import type { RawListing, SkillProfile, ScoredListing, TokenUsage } from '../types/index.js';
 
 export interface PipelineResult {
   listingsFound: number;
   newListings: number;
   listingsScored: number;
   alertCandidates: ScoredListing[];
+  tokenUsage: TokenUsage;
 }
 
 /** Get the default skill profile (or first available) */
@@ -51,6 +52,7 @@ export async function runPipeline(
     newListings: 0,
     listingsScored: 0,
     alertCandidates: [],
+    tokenUsage: { inputTokens: 0, outputTokens: 0, estimatedCostUsd: 0 },
   };
 
   if (rawListings.length === 0) {
@@ -70,8 +72,9 @@ export async function runPipeline(
 
   // Step 2: Score with Claude AI
   console.log('\n  ── AI Scoring ──');
-  const scores = await scoreListings(newListings, profile);
+  const { scores, tokenUsage } = await scoreListings(newListings, profile);
   result.listingsScored = scores.size;
+  result.tokenUsage = tokenUsage;
 
   // Step 3: Write to Supabase
   console.log('\n  ── Writing to Supabase ──');
