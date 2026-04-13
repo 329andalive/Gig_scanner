@@ -30,7 +30,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev && npm install tsx
 
 # Copy source
 COPY tsconfig.json ./
