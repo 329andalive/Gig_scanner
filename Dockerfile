@@ -1,9 +1,10 @@
 FROM node:20-slim
 
-# Install Chromium dependencies for Puppeteer
+# Install Chromium and all dependencies for Puppeteer
 RUN apt-get update && apt-get install -y \
     chromium \
     fonts-liberation \
+    fonts-noto-color-emoji \
     libasound2 \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
@@ -19,12 +20,17 @@ RUN apt-get update && apt-get install -y \
     libxdamage1 \
     libxrandr2 \
     xdg-utils \
+    ca-certificates \
     --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && echo "Chromium installed at: $(which chromium || which chromium-browser || echo 'NOT FOUND')"
 
-# Tell Puppeteer to use system Chromium
+# Tell Puppeteer to use system Chromium — try both possible paths
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
+# Increase shared memory for Chromium (Docker default 64MB is too small)
+ENV CHROMIUM_FLAGS="--disable-dev-shm-usage"
 
 WORKDIR /app
 

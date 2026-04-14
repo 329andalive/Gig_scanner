@@ -100,8 +100,8 @@ async function scanPlatform(platform: Platform): Promise<void> {
     stats.listingsFound = rawListings.length;
 
     if (rawListings.length === 0) {
-      console.log('  No listings found.');
-      if (logId) await completeScanLog(logId, stats, startTime);
+      console.warn(`  WARNING: ${platform.name} returned 0 listings. Check scraper logs above for captcha, login walls, or selector issues.`);
+      if (logId) await completeScanLog(logId, stats, startTime, 'Scraper returned 0 listings — possible anti-bot block or selector mismatch');
       return;
     }
 

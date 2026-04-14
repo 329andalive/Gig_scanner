@@ -4,19 +4,32 @@ import type { Browser } from 'puppeteer';
 
 puppeteer.use(StealthPlugin());
 
-/** Launch a stealth browser instance */
+/** Launch a stealth browser instance with explicit logging */
 export async function launchBrowser(): Promise<Browser> {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-      '--window-size=1920,1080',
-    ],
-  });
-  return browser as unknown as Browser;
+  const execPath = process.env.PUPPETEER_EXECUTABLE_PATH || undefined;
+  console.log(`  [Browser] Launching Chromium...${execPath ? ` (path: ${execPath})` : ''}`);
+
+  try {
+    const browser = await puppeteer.launch({
+      headless: true,
+      executablePath: execPath,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--window-size=1920,1080',
+        '--single-process',
+      ],
+    });
+
+    const version = await browser.version();
+    console.log(`  [Browser] Launched: ${version}`);
+    return browser as unknown as Browser;
+  } catch (err) {
+    console.error(`  [Browser] FAILED to launch: ${err instanceof Error ? err.message : err}`);
+    throw err;
+  }
 }
 
 /** Random delay between min and max milliseconds */

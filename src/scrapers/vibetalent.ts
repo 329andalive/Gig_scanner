@@ -228,7 +228,14 @@ export async function scrapeVibeTalent(
   // Fall back to Puppeteer
   console.log('  Falling back to Puppeteer...');
   const allListings: RawListing[] = [];
-  const browser = await launchBrowser();
+  let browser;
+
+  try {
+    browser = await launchBrowser();
+  } catch {
+    console.error('  VibeTalent: Browser launch failed, aborting scrape.');
+    return [];
+  }
 
   try {
     const page = await browser.newPage();
